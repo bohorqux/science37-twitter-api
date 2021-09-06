@@ -1,0 +1,456 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<munit:config name="science37-twitter-api-suite.xml" />
+	<munit:test name="get-hashtags-success" doc:id="e4249844-451f-4ba3-ac80-505aa1dc07c5">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Retrieving Tweets Based on Keyword" doc:id="339871e5-0582-4ef2-821a-47e0128592d5" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="aa358c84-4446-4e5f-9a28-ab47dbcc86e5" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json --- readUrl('classpath://gethashtagssuccess\mock_payload.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					<munit-tools:attributes value="#[readUrl('classpath://gethashtagssuccess\mock_attributes.dwl')]" />
+					<munit-tools:variables >
+						<munit-tools:variable key="outboundHeaders" value="#[readUrl('classpath://gethashtagssuccess\mock_variable_.dwl')]" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy Formatting Payload into Hashtag List" doc:id="b1143bdf-5608-469e-b3e9-d4e1276ddfb5" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="14ff16f1-28df-4a70-a8e4-30ecfa6d3bbe" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="804c6308-1dac-49ca-9fc0-4732fffc90ab" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import gethashtagssuccess::spy_assert_payload
+---
+spy_assert_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="7011b3b5-47ba-4a46-819e-f3a5fe4aba8a" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import gethashtagssuccess::spy_assert_payload1
+---
+spy_assert_payload1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit:set-event doc:name="Set Input" doc:id="aca9bff5-74e5-4874-a228-3f46b29f1458" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://gethashtagssuccess\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				<munit:attributes value="#[readUrl('classpath://gethashtagssuccess\set-event_attributes.dwl')]" />
+				<munit:variables >
+					<munit:variable key="outboundHeaders" value="#[readUrl('classpath://gethashtagssuccess\set-event_variable_.dwl')]" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-Ref to Get Hashtags" doc:id="ec3c19f4-8778-4e05-a9a3-b6ecd563277c" name="get:\v1\list\hashtags:science37-twitter-api-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="bd93e3a0-4bef-47a4-8fa0-2d5fcd30a7fd" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import gethashtagssuccess::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:verify-call doc:name="Verify Formatting Payload into Hashtag List" doc:id="37b20068-0238-46c8-b2a8-a32f58be65f2" processor="ee:transform" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="14ff16f1-28df-4a70-a8e4-30ecfa6d3bbe" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-hashtag-success-empty-response" doc:id="8fe6cf96-0d81-4c41-a2c3-cff27430247b">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Retrieving Tweets Based on Keyword" doc:id="0e5b5c74-9158-4cb7-8f1a-fdf8434c50f2" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="aa358c84-4446-4e5f-9a28-ab47dbcc86e5" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json --- readUrl('classpath://gethashtagsuccessemptyresponse\mock_payload.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					<munit-tools:attributes value="#[readUrl('classpath://gethashtagsuccessemptyresponse\mock_attributes.dwl')]" />
+					<munit-tools:variables >
+						<munit-tools:variable key="outboundHeaders" value="#[readUrl('classpath://gethashtagsuccessemptyresponse\mock_variable_.dwl')]" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy Handle Empty Query Result" doc:id="90c1fd54-49ad-476a-be47-914ec5319483" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="a9418c97-5b6a-4093-baf0-f21bec459311" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="a1d6bc7e-e8f0-43fa-82ba-48305428a67a" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import gethashtagsuccessemptyresponse::spy_assert_payload
+---
+spy_assert_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="4ed91f80-05ac-4adf-bdd9-86ed2c16d4f8" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import gethashtagsuccessemptyresponse::spy_assert_payload1
+---
+spy_assert_payload1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit:set-event doc:name="Set Input" doc:id="777eb1ed-b847-4ffb-bbd1-170c6781c242" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://gethashtagsuccessemptyresponse\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				<munit:attributes value="#[readUrl('classpath://gethashtagsuccessemptyresponse\set-event_attributes.dwl')]" />
+				<munit:variables >
+					<munit:variable key="outboundHeaders" value="#[readUrl('classpath://gethashtagsuccessemptyresponse\set-event_variable_.dwl')]" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-Ref to Get Hashtags" doc:id="e10881b6-c5aa-4186-aa71-a665290205de" name="get:\v1\list\hashtags:science37-twitter-api-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="eb2762dd-d9d1-46bc-8d81-dc16c3c08c66" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import gethashtagsuccessemptyresponse::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:verify-call doc:name="Verify Handle Empty Query Result" doc:id="8582349c-5ab4-4521-9bed-935072de94d9" processor="ee:transform" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="a9418c97-5b6a-4093-baf0-f21bec459311" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-hashtag-fail-invalid-token" doc:id="63c30937-76ee-48eb-8a42-2f3357ba43b0" expectedErrorType="HTTP:UNAUTHORIZED">
+		<munit:execution >
+			<munit:set-event doc:name="Set Input" doc:id="0cad1e41-ce01-4d82-99f9-d00aa6629c1c">
+				<munit:attributes value="#[readUrl('classpath://gethashtagfailinvalidtoken\set-event_attributes.dwl')]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-Ref to Get Hashtags" doc:id="9280e2d9-9468-458d-a9af-1723ac5d17d0" name="get:\v1\list\hashtags:science37-twitter-api-config"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:fail doc:name="Fail" doc:id="b497d7e9-ab5f-448f-baeb-02c84ad61de8" message="HTTP:UNAUTHORIZED error has been raised"/>
+
+		</munit:validation>
+	
+</munit:test>
+	<munit:test name="get-tweets-success-response" doc:id="b30b92ac-f3a0-472b-b9a6-d4ea50974f64">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Retrieving Tweets Based on Keyword" doc:id="1ac61bcd-a826-4880-82b0-e0c42c597e0b" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="34436d16-2b14-4659-a5a9-c630879cb1b5" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json --- readUrl('classpath://gettweetssuccessresponse\mock_payload.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					<munit-tools:attributes value="#[readUrl('classpath://gettweetssuccessresponse\mock_attributes.dwl')]" />
+					<munit-tools:variables >
+						<munit-tools:variable key="outboundHeaders" value="#[readUrl('classpath://gettweetssuccessresponse\mock_variable_.dwl')]" />
+						<munit-tools:variable key="hours" value="#[output application/java --- readUrl('classpath://gettweetssuccessresponse\mock_variable_1.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy Formatting Payload into Tweet List" doc:id="77f95147-13f8-45ed-aa66-4300ef0c0a72" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="8acb1bb7-2fab-4678-85c8-d68eba3c43cf" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="21c8a54d-baa3-428b-a91e-5fe0c904d798" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import gettweetssuccessresponse::spy_assert_payload
+---
+spy_assert_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="5b3e4d4e-5c12-4f30-9701-0bc623e3738e" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import gettweetssuccessresponse::spy_assert_payload1
+---
+spy_assert_payload1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit:set-event doc:name="Set Input" doc:id="d5f3073b-01f0-4045-b941-0684889a2e35" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://gettweetssuccessresponse\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				<munit:attributes value="#[readUrl('classpath://gettweetssuccessresponse\set-event_attributes.dwl')]" />
+				<munit:variables >
+					<munit:variable key="outboundHeaders" value="#[readUrl('classpath://gettweetssuccessresponse\set-event_variable_.dwl')]" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-Ref to Get Tweets" doc:id="3d58c489-a6ab-4af6-99e1-ce21f3121ce6" name="get:\v1\list\tweets:science37-twitter-api-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="c7cba386-fe13-49c7-ba82-193733117bc3" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import gettweetssuccessresponse::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:verify-call doc:name="Verify Formatting Payload into Tweet List" doc:id="1b2f04fa-df87-4ea4-af0f-441b0867a690" processor="ee:transform" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="8acb1bb7-2fab-4678-85c8-d68eba3c43cf" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-tweets-success-empty-list" doc:id="85490423-14f6-486c-b9bb-8b725b2238b3">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Retrieving Tweets Based on Keyword" doc:id="5b2d00a8-e82b-4db8-8170-26df565171df" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="34436d16-2b14-4659-a5a9-c630879cb1b5" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json --- readUrl('classpath://gettweetssuccessemptylist\mock_payload.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					<munit-tools:attributes value="#[readUrl('classpath://gettweetssuccessemptylist\mock_attributes.dwl')]" />
+					<munit-tools:variables >
+						<munit-tools:variable key="outboundHeaders" value="#[readUrl('classpath://gettweetssuccessemptylist\mock_variable_.dwl')]" />
+						<munit-tools:variable key="hours" value="#[output application/java --- readUrl('classpath://gettweetssuccessemptylist\mock_variable_1.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy Formatting Payload into Tweet List" doc:id="37ec045d-0485-450e-af31-1e79ec9db068" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="8acb1bb7-2fab-4678-85c8-d68eba3c43cf" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="ab7abe6b-7b3f-400a-a6c2-94bb2cdda1ba" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import gettweetssuccessemptylist::spy_assert_payload
+---
+spy_assert_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="2a360231-c6bc-438a-afac-3427094d157d" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import gettweetssuccessemptylist::spy_assert_payload1
+---
+spy_assert_payload1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit:set-event doc:name="Set Input" doc:id="dd345bcd-68be-40e9-b8a9-ab723bd63d40" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://gettweetssuccessemptylist\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				<munit:attributes value="#[readUrl('classpath://gettweetssuccessemptylist\set-event_attributes.dwl')]" />
+				<munit:variables >
+					<munit:variable key="outboundHeaders" value="#[readUrl('classpath://gettweetssuccessemptylist\set-event_variable_.dwl')]" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-Ref to Get Tweets" doc:id="9fd4b946-affd-46e5-8c3f-e39ac16922a5" name="get:\v1\list\tweets:science37-twitter-api-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="87b21f5f-97a9-4a98-9707-430032dfe41a" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import gettweetssuccessemptylist::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:verify-call doc:name="Verify Formatting Payload into Tweet List" doc:id="7d4e2fc6-1fd7-4244-b3c2-13ff87b8e81c" processor="ee:transform" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="8acb1bb7-2fab-4678-85c8-d68eba3c43cf" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+
+<munit:test name="get-tweets-fail-invalid-token" doc:id="26cb0e32-b748-440d-b5d6-c262573e7afa" expectedErrorType="HTTP:UNAUTHORIZED">
+		<munit:execution >
+			<munit:set-event doc:name="Set Input" doc:id="d66d1ddb-4b98-4658-ac19-34cabc1275a1">
+				<munit:attributes value="#[readUrl('classpath://gethashtagfailinvalidtoken\set-event_attributes.dwl')]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-Ref to Get Tweets" doc:id="257a1867-1c6d-4c38-ada6-e769451d12b4" name="get:\v1\list\tweets:science37-twitter-api-config"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:fail doc:name="Fail" doc:id="c2b1886e-03ba-402e-b1f2-f38c3a7db601" message="HTTP:UNAUTHORIZED error has been raised"/>
+
+		</munit:validation>
+	
+</munit:test>
+	<munit:test name="get-tweets-success-empty-response" doc:id="47a0b9e0-b34b-4328-82aa-0a69e4ae1cd9">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Retrieving Tweets Based on Keyword" doc:id="0e4073b8-62ac-4afe-9cc0-ba6fc37c9cb7" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="34436d16-2b14-4659-a5a9-c630879cb1b5" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json --- readUrl('classpath://gettweetssuccessemptyresponse\mock_payload.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					<munit-tools:attributes value="#[readUrl('classpath://gettweetssuccessemptyresponse\mock_attributes.dwl')]" />
+					<munit-tools:variables >
+						<munit-tools:variable key="outboundHeaders" value="#[readUrl('classpath://gettweetssuccessemptyresponse\mock_variable_.dwl')]" />
+						<munit-tools:variable key="hours" value="#[output application/java --- readUrl('classpath://gettweetssuccessemptyresponse\mock_variable_1.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy Handle Empty Query Result" doc:id="1a3f1ca7-1872-4651-a861-7b46b1ac7478" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="114bb722-3ea0-4a69-bcf8-91cdf6d44d42" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="c5c2d295-a45d-4afc-9566-784f7d684b5f" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import gettweetssuccessemptyresponse::spy_assert_payload
+---
+spy_assert_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="4cd6304b-77df-45c4-bcaf-e0e76045bb6d" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import gettweetssuccessemptyresponse::spy_assert_payload1
+---
+spy_assert_payload1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit:set-event doc:name="Set Input" doc:id="f63b1252-37b2-4101-a0c4-acf8d2874b8b" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://gettweetssuccessemptyresponse\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				<munit:attributes value="#[readUrl('classpath://gettweetssuccessemptyresponse\set-event_attributes.dwl')]" />
+				<munit:variables >
+					<munit:variable key="outboundHeaders" value="#[readUrl('classpath://gettweetssuccessemptyresponse\set-event_variable_.dwl')]" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-Ref to Get Tweets" doc:id="1228f18f-ade1-446b-990c-adda80c82f8f" name="get:\v1\list\tweets:science37-twitter-api-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="f5dd9fb6-d61c-4f74-b150-b59a87099685" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import gettweetssuccessemptyresponse::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:verify-call doc:name="Verify Handle Empty Query Result" doc:id="812e5ad2-8dd2-4333-af3c-94b573bc402f" processor="ee:transform" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="114bb722-3ea0-4a69-bcf8-91cdf6d44d42" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="apikit-badrequest-response" doc:id="b41777b5-f9d6-4b65-bb97-3111c6e8148f" expectedErrorType="APIKIT:BAD_REQUEST">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock APIKIT:BAD_REQUEST" doc:id="4277b353-39da-4e61-b4fb-86dbb269a1fa" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="science37-twitter-api-config" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="24c16fb6-6bbb-412b-9998-15b2e01fbe0b" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:BAD_REQUEST" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-Ref to Main-Flow" doc:id="fb2a2c8f-acb8-4366-8abc-3c2233e10ec9" name="science37-twitter-api-main"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert 400 http status" doc:id="53079f27-7007-4d54-9117-67f08e79a34d" actual="#[vars.httpStatus]" expected="#[400]" message="400 Error has been triggered"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="apikit-notfound-response" doc:id="45bd10a8-89cb-4d26-8fa2-675817e28f39" expectedErrorType="APIKIT:NOT_FOUND">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock APIKIT:NOT_FOUND" doc:id="58fbc517-7874-4704-a67c-216b70ca48b5" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="science37-twitter-api-config" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="24c16fb6-6bbb-412b-9998-15b2e01fbe0b" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_FOUND" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-Ref to Main-Flow" doc:id="580d3187-5528-488f-bf3c-7cf9940792bb" name="science37-twitter-api-main"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert 404 http status" doc:id="261f75c1-f81a-4361-8737-3827c2240bb8" actual="#[vars.httpStatus]" expected="#[404]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="apikit-methodnotallowed-response" doc:id="40cccddb-e39a-4dcd-a700-76275b99f5c5" expectedErrorType="APIKIT:METHOD_NOT_ALLOWED">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock APIKIT:METHOD_NOT_ALLOWED" doc:id="8e71a85a-08c6-4902-a014-b6fb57644ebe" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="science37-twitter-api-config" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="24c16fb6-6bbb-412b-9998-15b2e01fbe0b" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:METHOD_NOT_ALLOWED" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-Ref to Main-Flow" doc:id="808f0919-91ef-4098-a3ca-42026416ed85" name="science37-twitter-api-main"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert 405 http status" doc:id="3aeba2e4-0a39-4a6a-b8da-49a9611e7b5c" actual="#[vars.httpStatus]" expected="#[405]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="apikit-notacceptable-response" doc:id="983e0416-1d1f-4ad8-93b9-3984a335c04b" expectedErrorType="APIKIT:NOT_ACCEPTABLE">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock APIKIT:NOT_ACCEPTABLE" doc:id="6779e76c-b756-44c5-9591-f84dd8150489" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="science37-twitter-api-config" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="24c16fb6-6bbb-412b-9998-15b2e01fbe0b" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_ACCEPTABLE" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-Ref to Main-Flow" doc:id="bc04a780-6897-4bee-9348-c9e595b2610e" name="science37-twitter-api-main"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert 406 http status" doc:id="aea36a97-0ff9-46a7-9e85-b3dc30ba4564" actual="#[vars.httpStatus]" expected="#[406]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="apikit-notimplemented-response" doc:id="786de6d0-3537-473f-a7b7-65e7a071113c" expectedErrorType="APIKIT:NOT_IMPLEMENTED">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock APIKIT:NOT_IMPLEMENTED" doc:id="78b845f7-43e8-44d4-8e10-91e2ecf4dd36" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="science37-twitter-api-config" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="24c16fb6-6bbb-412b-9998-15b2e01fbe0b" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_IMPLEMENTED" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-Ref to Main-Flow" doc:id="b9c8105d-6500-450e-982b-1dc8e5e8b90a" name="science37-twitter-api-main"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert 501 http status" doc:id="8e2b1ec0-d9a4-498d-a878-56a25f21ef5e" actual="#[vars.httpStatus]" expected="#[501]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="apikit-console-notfound-response" doc:id="cf4e2b6a-e01c-474c-a1d1-b5bad6ed25a6" expectedErrorType="APIKIT:NOT_FOUND">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock APIKIT:NOT_FOUND" doc:id="ce76cb52-a699-4f27-b469-400b74963743" processor="apikit:console">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="science37-twitter-api-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_FOUND" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-Ref to Console-Flow" doc:id="0f20b211-7efa-4a69-9cc8-af454efdf3e8" name="science37-twitter-api-console"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert 404 https status" doc:id="25301489-4ffd-4a20-a9da-e11dce751384" actual="#[vars.httpStatus]" expected="#[404]"/>
+		</munit:validation>
+	</munit:test>
+
+</mule>

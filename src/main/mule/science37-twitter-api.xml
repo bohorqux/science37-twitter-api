@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+    <apikit:config name="science37-twitter-api-config" api="resource::3db7bc0a-294b-4b26-8d58-65972f60a318:science37-twitter-api:1.0.6:raml:zip:science37-twitter-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus"/>
+    <flow name="science37-twitter-api-main">
+        <http:listener config-ref="science37-twitter-api-httpListenerConfig" path="/api/*" outputMimeType="application/json">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="science37-twitter-api-config" doc:id="24c16fb6-6bbb-412b-9998-15b2e01fbe0b"/>
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": {
+		"errorType": error.errorType.identifier,
+		"errorDescription": error.description
+	}
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[400]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": {
+		"errorType": error.errorType.identifier,
+		"errorDescription": "The resource you called cannot be found."
+	},
+	"_links": [
+		{
+			"method": "GET",
+			"resource": "/list/hashtags"
+		},
+		{
+			"method": "GET",
+			"resource": "/list/tweets"
+		}
+	]
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[404]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": {
+		"errorType": error.errorType.identifier,
+		"errorDescription": error.description
+	}
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[405]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+			<on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="science37-twitter-api-console">
+        <http:listener config-ref="science37-twitter-api-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="science37-twitter-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="get:\v1\list\hashtags:science37-twitter-api-config">
+        <logger level="INFO" doc:name="Logging Start of Event" doc:id="84549813-76fd-4f99-bdd4-787f3473d7f4" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	"resource": attributes.requestUri,&#10;	"time": now(),&#10;	"correlationId": correlationId,&#10;	"message": "Start of event.",&#10;	"action": "Calling Twitter API..."&#10;}]'/>
+		<http:request method="GET" doc:name="Retrieving Tweets Based on Keyword" doc:id="aa358c84-4446-4e5f-9a28-ab47dbcc86e5" config-ref="Twitter_Search_API_1.1" path="${s37.api.twitter.request.searchPath}${s37.api.twitter.request.searchTweets}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Authorization" : attributes.headers.Authorization
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"q" : attributes.queryParams.keyword,
+	"result_type": p("s37.api.twitter.request.resultType"),
+	"count": p("s37.api.twitter.request.maxCount")
+}]]]></http:query-params>
+		</http:request>
+		<choice doc:name="Are Results Empty?" doc:id="1d3cc07f-1f12-4e46-8d6b-00616f4cd96b" >
+			<when expression="#[sizeOf(payload.statuses) == 0]">
+				<ee:transform doc:name="Handle Empty Query Result" doc:id="a9418c97-5b6a-4093-baf0-f21bec459311" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": {
+		"code": 200,
+		"message": "No tweets returned."
+	},
+	"twitterResponse": payload
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Log Successful Response" doc:id="8c1c0cca-6c35-493b-83e8-d6b793e92e94" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	time: now(),&#10;	correlationId: correlationId,&#10;	message: "Successfully returned $(sizeOf(payload.statuses)) tweet[s]!",&#10;	action: "Formatting results..."&#10;}]' />
+				<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:name="Formatting Payload into Hashtag List" doc:id="14ff16f1-28df-4a70-a8e4-30ecfa6d3bbe">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"list": flatten(payload.statuses map (
+		$.entities.hashtags map (
+			$.text
+		)
+	)) distinctBy $
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+				<logger level="INFO" doc:name="Logging End of Event" doc:id="01e73539-2afd-4053-8bca-251466fbb468" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	time: now(),&#10;	correlationId: correlationId,&#10;	message: "Results formatted successfully!"&#10;}]' />
+			</otherwise>
+		</choice>
+		<error-handler>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="74e12916-0e9e-4bf7-ad45-cf4b2bb7f2ad" type="HTTP:UNAUTHORIZED">
+				<set-variable value="#[401]" doc:name="Set http status to 401" doc:id="aa266728-dbb2-46a4-8010-f6c03fe07993" variableName="httpStatus"/>
+				<ee:transform doc:name="Handle Unathorized Error" doc:id="c998c264-22d1-42ab-830a-d4599d284d59" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": {
+		"errorType": error.errorType.identifier,
+		"errorDescription": error.description,
+		"devMessage": "Twitter oAuth token is invalid."
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+    </flow>
+    <flow name="get:\v1\list\tweets:science37-twitter-api-config">
+        <logger level="INFO" doc:name="Logging Start of Event" doc:id="5b295dfb-8145-4648-bab7-de7ad9a87b21" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	"resource": attributes.requestUri,&#10;	"time": now(),&#10;	"correlationId": correlationId,&#10;	"message": "Start of event.",&#10;	"action": "Storing hours query param as variable..."&#10;}]'/>
+		<set-variable value="#[attributes.queryParams.hours]" doc:name="Storing Hours Query Param as Variable" doc:id="2d329e99-f9b9-4aa0-a952-0267576b6188" variableName="hours"/>
+		<logger level="INFO" doc:name="Log Storage of Hours Query Param" doc:id="f7ec173e-0498-4db4-89d3-f7f2888510c0" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	time: now(),&#10;	correlationId: correlationId,&#10;	message: "Successfully stored hours query param!",&#10;	action: "Calling Twitter API..."&#10;}]'/>
+		<http:request method="GET" doc:name="Retrieving Tweets Based on Keyword" doc:id="34436d16-2b14-4659-a5a9-c630879cb1b5" config-ref="Twitter_Search_API_1.1" path="${s37.api.twitter.request.searchPath}${s37.api.twitter.request.searchTweets}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Authorization" : attributes.headers.Authorization
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[{
+	"q": attributes.queryParams.keyword,
+	"count": p("s37.api.twitter.request.maxCount")
+}]]]></http:query-params>
+		</http:request>
+		<choice doc:name="Are Results Empty?" doc:id="5e7985f9-6fd1-44ab-8b7c-f2640a047c9e" >
+			<when expression="#[sizeOf(payload.statuses) == 0]">
+				<ee:transform doc:name="Handle Empty Query Result" doc:id="114bb722-3ea0-4a69-bcf8-91cdf6d44d42" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": {
+		"code": 200,
+		"message": "No tweets returned."
+	},
+	"twitterResponse": payload
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Log Successful Response" doc:id="0c1569af-b957-4950-9715-dd3bc3ea607e" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	time: now(),&#10;	correlationId: correlationId,&#10;	message: "Successfully returned $(sizeOf(payload.statuses)) tweet[s]!",&#10;	action: "Formatting results..."&#10;}]' />
+				<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:name="Formatting Payload into Tweet List" doc:id="8acb1bb7-2fab-4678-85c8-d68eba3c43cf">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+type twitterFormat = DateTime {format: "E MMM dd HH:mm:ss Z yyyy"}
+fun toUTC(d: DateTime) = d as DateTime {format: "yyyy-MM-dd HH:mm:ss"} >> "UTC"
+
+var nowUTC = toUTC(now()) as twitterFormat
+var start_time = nowUTC - ("PT$(vars.hours)H" as Period)
+---
+{
+	"list": payload.statuses filter (start_time < ($.created_at as twitterFormat)) map {
+		"text": $.text,
+		"screen name": $.user.screen_name,
+		"url": "https://twitter.com/i/web/status/$($.id)"
+	}	
+}
+]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+				<choice doc:name="Tweets Found Within Hours?" doc:id="220fa181-59ad-4f11-9f4e-6560c4c975a7" >
+					<when expression="#[sizeOf(payload.list) == 0]">
+						<ee:transform doc:name="Handle Empty List" doc:id="18cd49f8-40c7-404a-975e-8bd646ee2dd9" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": {
+		"code": 200,
+		"message": "Tweets from $(vars.hours) hour[s] ago not found."
+	}
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="Logging End of Event" doc:id="7ce6b3d6-5be3-42e8-9bd5-7b9af859fe2c" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	time: now(),&#10;	correlationId: correlationId,&#10;	message: "Results formatted successfully!"&#10;}]' />
+					</otherwise>
+				</choice>
+			</otherwise>
+		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="ee9824f5-7a81-4528-afb2-8e5726cec3d2" >
+				<ee:transform doc:name="Handle Unathorized Error" doc:id="8893e71b-85d2-422c-81ed-dd7de017f96c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": {
+		"errorType": error.errorType.identifier,
+		"errorDescription": error.description,
+		"devMessage": "Twitter oAuth token is invalid."
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+    </flow>
+</mule>
