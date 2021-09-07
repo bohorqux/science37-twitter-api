@@ -17,7 +17,7 @@
   "scheme": "https",
   "queryParams": {
     "keyword": "nyt",
-    "hours": "5"
+    "hours": 5
   },
   "requestUri": "/api/list/tweets?keyword=nyt&hours=5",
   "queryString": "keyword=nyt&hours=5",

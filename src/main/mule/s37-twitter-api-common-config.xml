@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd 
-http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
-	<global-property doc:name="Global Property" doc:id="4b25f787-bcb7-475f-bb4a-70e514af41b6" name="https.port" value="8081" />
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+	<global-property doc:name="Global Property" doc:id="4b25f787-bcb7-475f-bb4a-70e514af41b6" name="https.port" value="8080" />
 	<global-property doc:name="Global Property" doc:id="574f0f86-f96d-4766-a8cc-1708a3d4336d" name="mule.env" value="local" />
 	<configuration-properties doc:name="Configuration properties" doc:id="1f0f05aa-e80c-4321-9cf3-e94f978964f8" file="properties/${mule.env}.properties" />
 	<http:listener-config name="science37-twitter-api-httpListenerConfig">
@@ -20,4 +21,5 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 	<http:request-config name="Twitter_Search_API_1.1" doc:name="HTTP Request configuration" doc:id="95c35bea-c2c9-479d-818b-f1a4f81dc59a" basePath="${s37.api.twitter.config.basePath}" >
 		<http:request-connection protocol="HTTPS" host="${s37.api.twitter.config.host}" port="${s37.api.twitter.config.port}" />
 	</http:request-config>
+	<api-gateway:autodiscovery apiId="${s37.autodiscovery.api.id}" ignoreBasePath="false" doc:name="API Autodiscovery" doc:id="b5abf504-3143-4a63-b160-4272c1fd2dde" flowRef="science37-twitter-api-main" />
 </mule>

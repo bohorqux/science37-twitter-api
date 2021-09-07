@@ -3,7 +3,7 @@ import * from dw::test::Asserts
 ---
 payload must equalTo({
   "list": [
-    "WhatIf",
-    "ShangChi"
+    "#WhatIf",
+    "#ShangChi"
   ]
 })

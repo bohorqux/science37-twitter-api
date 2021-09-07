@@ -177,7 +177,7 @@ output application/json
 {
 	"list": flatten(payload.statuses map (
 		$.entities.hashtags map (
-			$.text
+			"#$($.text)"
 		)
 	)) distinctBy $
 }]]></ee:set-payload>
@@ -204,10 +204,28 @@ output application/json
 					</ee:message>
 				</ee:transform>
 			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="57b44743-055e-482c-9266-430bf8ba0c10" type="HTTP:BAD_REQUEST">
+				<set-variable value="#[400]" doc:name="Set http status to 400" doc:id="9bc21e8a-76a9-4833-92de-559a6cfacae4" variableName="httpStatus"/>
+				<ee:transform doc:name="Handle Bad Request Error" doc:id="2b82d70c-a28a-4b47-9140-4078ca6223c3" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": {
+		"errorType": error.errorType.identifier,
+		"errorDescription": error.description,
+		"devMessage": "Query params may be invalid or null."
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
 		</error-handler>
     </flow>
     <flow name="get:\v1\list\tweets:science37-twitter-api-config">
-        <logger level="INFO" doc:name="Logging Start of Event" doc:id="5b295dfb-8145-4648-bab7-de7ad9a87b21" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	"resource": attributes.requestUri,&#10;	"time": now(),&#10;	"correlationId": correlationId,&#10;	"message": "Start of event.",&#10;	"action": "Storing hours query param as variable..."&#10;}]'/>
+        <logger level="INFO" doc:name="Logging Start of Event" doc:id="5b295dfb-8145-4648-bab7-de7ad9a87b21" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	"resource": attributes.requestUri,&#10;	"time": now(),&#10;	"correlationId": correlationId,&#10;	"message": "Start of event.",&#10;	"action": "Storing hours query param as variable and current time..."&#10;}]'/>
+		<set-variable value="#[now()]" doc:name="Store Current Time" doc:id="3e76207c-96a5-4d47-a06b-b6abcce0d638" variableName="currentTime"/>
 		<set-variable value="#[attributes.queryParams.hours]" doc:name="Storing Hours Query Param as Variable" doc:id="2d329e99-f9b9-4aa0-a952-0267576b6188" variableName="hours"/>
 		<logger level="INFO" doc:name="Log Storage of Hours Query Param" doc:id="f7ec173e-0498-4db4-89d3-f7f2888510c0" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	time: now(),&#10;	correlationId: correlationId,&#10;	message: "Successfully stored hours query param!",&#10;	action: "Calling Twitter API..."&#10;}]'/>
 		<http:request method="GET" doc:name="Retrieving Tweets Based on Keyword" doc:id="34436d16-2b14-4659-a5a9-c630879cb1b5" config-ref="Twitter_Search_API_1.1" path="${s37.api.twitter.request.searchPath}${s37.api.twitter.request.searchTweets}">
@@ -247,17 +265,16 @@ output application/json
 type twitterFormat = DateTime {format: "E MMM dd HH:mm:ss Z yyyy"}
 fun toUTC(d: DateTime) = d as DateTime {format: "yyyy-MM-dd HH:mm:ss"} >> "UTC"
 
-var nowUTC = toUTC(now()) as twitterFormat
+var nowUTC = toUTC(vars.currentTime) as twitterFormat
 var start_time = nowUTC - ("PT$(vars.hours)H" as Period)
 ---
 {
 	"list": payload.statuses filter (start_time < ($.created_at as twitterFormat)) map {
 		"text": $.text,
-		"screen name": $.user.screen_name,
+		"screenName": $.user.screen_name,
 		"url": "https://twitter.com/i/web/status/$($.id)"
 	}	
-}
-]]></ee:set-payload>
+}]]></ee:set-payload>
             </ee:message>
         </ee:transform>
 				<choice doc:name="Tweets Found Within Hours?" doc:id="220fa181-59ad-4f11-9f4e-6560c4c975a7" >
@@ -283,7 +300,8 @@ output application/json
 			</otherwise>
 		</choice>
 		<error-handler >
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="ee9824f5-7a81-4528-afb2-8e5726cec3d2" >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="ee9824f5-7a81-4528-afb2-8e5726cec3d2" type="HTTP:UNAUTHORIZED">
+				<set-variable value="#[401]" doc:name="Set http status to 401" doc:id="5398d4b5-86a3-4217-86ec-c9b0e19402f1" variableName="httpStatus"/>
 				<ee:transform doc:name="Handle Unathorized Error" doc:id="8893e71b-85d2-422c-81ed-dd7de017f96c" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
@@ -294,6 +312,23 @@ output application/json
 		"errorType": error.errorType.identifier,
 		"errorDescription": error.description,
 		"devMessage": "Twitter oAuth token is invalid."
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+			<on-error-propagate type="HTTP:BAD_REQUEST" enableNotifications="true" logException="true">
+				<set-variable value="#[400]" doc:name="Set http status to 400" doc:id="c024b3e7-b89e-4e5f-a20e-97ea9512dfff" variableName="httpStatus" />
+				<ee:transform doc:name="Handle Bad Request Error" doc:id="8a0cecf3-c5d7-434c-806b-cf33d33695ec">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": {
+		"errorType": error.errorType.identifier,
+		"errorDescription": error.description,
+		"devMessage": "Query params may be invalid or null."
 	}
 }]]></ee:set-payload>
 					</ee:message>
